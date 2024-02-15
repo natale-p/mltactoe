@@ -1,0 +1,14 @@
+---
+Language:                           Cpp
+BasedOnStyle:                       Chromium
+ColumnLimit:                        120
+CommentPragmas:                     '^.*(NOLINT|LCOV_EXCL_LINE|LCOV_EXCL_START|LCOV_EXCL_STOP).*$'
+AlwaysBreakBeforeMultilineStrings:  false
+SpaceBeforeCpp11BracedList:         true
+AlwaysBreakTemplateDeclarations:    MultiLine
+IncludeIsMainRegex:                 '([-_]*(test|unittest|Test))?$'
+BreakConstructorInitializers:       AfterColon
+---
+Language: Proto
+BasedOnStyle: Google
+...
