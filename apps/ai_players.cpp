@@ -36,6 +36,7 @@ static void printUsage(const char* program_name) {
 
 int main(int argc, char* argv[]) {
   constexpr int kDefaultEpisodes = 5000;  ///< Default number of training episodes.
+  constexpr double kExplorationRate = 0.1;  ///< Exploration rate
   int num_episodes = kDefaultEpisodes;    ///< Number of training episodes.
   std::string x_model;
   std::string o_model;
@@ -60,29 +61,29 @@ int main(int argc, char* argv[]) {
         break;
       case 'h':
         // Print usage information and exit.
-        printUsage(argv[0]);
+        printUsage(*argv);
         return 0;
       default:
         // Invalid option or missing argument.
-        printUsage(argv[0]);
+        printUsage(*argv);
         return 1;
     }
   }
 
   if (x_model.empty() || o_model.empty()) {
-    printUsage(argv[0]);
+    printUsage(*argv);
     return 1;
   }
 
   // Create two instances
   AgentMl agent_x;
-  agent_x.setExplorationRate(0.1);
+  agent_x.setExplorationRate(kExplorationRate);
   if (!agent_x.load(x_model)) {
     std::cerr << "Cannot load file " << x_model << std::endl;
   }
 
   AgentMl agent_o;
-  agent_o.setExplorationRate(0.1);
+  agent_o.setExplorationRate(kExplorationRate);
   if (!agent_o.load(o_model)) {
     std::cerr << "Cannot load file " << o_model << std::endl;
   }
@@ -95,14 +96,13 @@ int main(int argc, char* argv[]) {
     // Reset the game.
     TicTacToe game;
 
-    int moves = 0;
     for (int moves = 0; !game.isGameOver(); ++moves) {
       // Determine the current player.
       const char current_player = (moves % 2 == 0) ? 'X' : 'O';
       AgentMl& current_agent = (moves % 2 == 0) ? agent_x : agent_o;
 
       // Get the current state (Tic-Tac-Toe board configuration).
-      std::vector<double> state = game.getFlattenedBoard(current_player);
+      const std::vector<double> state = game.getFlattenedBoard(current_player);
 
       // Select action
       const int action = current_agent.selectMove(state);

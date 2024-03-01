@@ -21,33 +21,27 @@
 
 TicTacToe::Impl::Impl() {
   // Initialize the game board with empty cells
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      board[i][j] = ' ';
-    }
-  }
+  reset();
 }
 
 void TicTacToe::Impl::reset() {
   // Clear the game board by setting all cells to empty
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      board[i][j] = ' ';
-    }
-  }
+  board_.fill(' ');
 }
 
-void TicTacToe::Impl::displayBoard() {
+void TicTacToe::Impl::displayBoard() const {
   // Output the current state of the game board to the console
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      std::cout << board[i][j];
-      if (j < 2)
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      std::cout << accessBoardAt(row, col);
+      if (col < 2) {
         std::cout << " | ";
+      }
     }
     std::cout << std::endl;
-    if (i < 2)
+    if (row < 2) {
       std::cout << "---------" << std::endl;
+    }
   }
 }
 
@@ -59,31 +53,35 @@ bool TicTacToe::Impl::makeMove(int row, int col, char player) {
   }
 
   // Place the player's symbol on the specified row and column
-  board[row][col] = player;
+  accessBoardAt(row, col) = player;
   return true;
 }
 
 char TicTacToe::Impl::checkWinner() const {
   // Check rows
-  for (int i = 0; i < 3; ++i) {
-    if (board[i][0] != ' ' && board[i][0] == board[i][1] && board[i][1] == board[i][2]) {
-      return board[i][0];
+  for (int row = 0; row < 3; ++row) {
+    if (accessBoardAt(row, 0) != ' ' && accessBoardAt(row, 0) == accessBoardAt(row, 1) &&
+        accessBoardAt(row, 1) == accessBoardAt(row, 2)) {
+      return accessBoardAt(row, 0);
     }
   }
 
   // Check columns
-  for (int j = 0; j < 3; ++j) {
-    if (board[0][j] != ' ' && board[0][j] == board[1][j] && board[1][j] == board[2][j]) {
-      return board[0][j];
+  for (int col = 0; col < 3; ++col) {
+    if (accessBoardAt(0, col) != ' ' && accessBoardAt(0, col) == accessBoardAt(1, col) &&
+        accessBoardAt(1, col) == accessBoardAt(2, col)) {
+      return accessBoardAt(0, col);
     }
   }
 
   // Check diagonals
-  if (board[0][0] != ' ' && board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
-    return board[0][0];
+  if (accessBoardAt(0, 0) != ' ' && accessBoardAt(0, 0) == accessBoardAt(1, 1) &&
+      accessBoardAt(1, 1) == accessBoardAt(2, 2)) {
+    return accessBoardAt(0, 0);
   }
-  if (board[0][2] != ' ' && board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
-    return board[0][2];
+  if (accessBoardAt(0, 2) != ' ' && accessBoardAt(0, 2) == accessBoardAt(1, 1) &&
+      accessBoardAt(1, 1) == accessBoardAt(2, 0)) {
+    return accessBoardAt(0, 2);
   }
 
   // If no winner found, return space indicating no winner yet
@@ -92,9 +90,9 @@ char TicTacToe::Impl::checkWinner() const {
 
 bool TicTacToe::Impl::isBoardFull() const {
   // Check if any cell is empty
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      if (board[i][j] == ' ') {
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      if (accessBoardAt(row, col) == ' ') {
         return false;  // Found an empty cell, board is not full
       }
     }
@@ -109,7 +107,7 @@ bool TicTacToe::Impl::isValidMove(int row, int col) {
   }
 
   // Check if the cell is already occupied
-  if (board[row][col] != ' ') {
+  if (accessBoardAt(row, col) != ' ') {
     return false;
   }
 
@@ -122,14 +120,14 @@ char TicTacToe::Impl::checkSymbol(int row, int col) const {
     return '\0';
   }
 
-  return board[row][col];
+  return accessBoardAt(row, col);
 }
 
 std::vector<double> TicTacToe::Impl::getFlattenedBoard(char currentPlayer) const {
   std::vector<double> flattenedBoard;
-  for (size_t row = 0; row < 3; ++row) {
-    for (size_t col = 0; col < 3; ++col) {
-      char cell = board[row][col];
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      const char cell = accessBoardAt(row, col);
       if (cell == ' ') {
         flattenedBoard.push_back(0.0);
       } else if (cell == currentPlayer) {
@@ -149,10 +147,9 @@ std::vector<int> TicTacToe::Impl::getAvailableMoves() const {
   for (int row = 0; row < 3; ++row) {
     for (int col = 0; col < 3; ++col) {
       // If the cell is empty, it's available for a move
-      if (board[row][col] == ' ') {
+      if (accessBoardAt(row, col) == ' ') {
         // Convert row and column indices to an integer representing the move
-        int action = row * 3 + col;
-        availableMoves.push_back(action);
+        availableMoves.push_back(row * 3 + col);
       }
     }
   }
@@ -167,7 +164,7 @@ std::vector<int> TicTacToe::Impl::getAvailableMoves(const State& currentState) {
   for (int row = 0; row < 3; ++row) {
     for (int col = 0; col < 3; ++col) {
       // Convert row and column indices to an integer representing the move
-      int action = row * 3 + col;
+      const int action = row * 3 + col;
       // If the cell is empty, it's available for a move
       if (currentState[action] == 0.0) {
         availableMoves.push_back(action);

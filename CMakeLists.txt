@@ -12,6 +12,7 @@ project(
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 
   # Optionally set things like CMAKE_CXX_STANDARD, CMAKE_POSITION_INDEPENDENT_CODE here
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
   # Let's ensure -std=c++xx instead of -std=g++xx
   set(CMAKE_CXX_EXTENSIONS OFF)
@@ -57,4 +58,29 @@ if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
  else()
    message(STATUS "GTest not found, tests will not be built")
  endif()
+
+ add_custom_target(
+     format
+     COMMAND clang-format
+         -style=file
+         -i
+         -assume-filename=${CMAKE_SOURCE_DIR}/.clang-format
+         ${CMAKE_SOURCE_DIR}/include/mltactoe/*.h
+         ${CMAKE_SOURCE_DIR}/src/*.cpp
+         ${CMAKE_SOURCE_DIR}/apps/*.cpp
+     COMMENT "Running clang-format on source files"
+ )
+
+# Add a custom target to run clang-tidy
+add_custom_target(
+    tidy
+    COMMAND clang-tidy
+        --enable-check-profile
+        -p ${CMAKE_BINARY_DIR}
+        -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+        ${CMAKE_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_SOURCE_DIR}/apps/*.cpp
+    COMMENT "Running clang-tidy on source files"
+)
+
 endif()

@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   constexpr int kDefaultEpisodes = 5000;                                     ///< Default number of training episodes.
   int num_episodes = kDefaultEpisodes;                                       ///< Number of training episodes.
   const char* home_dir = getenv("HOME");                                     ///< Home directory
-  std::string file_path = (home_dir) ? std::string(home_dir) + "/tic" : "";  ///< Default file path
+  std::string file_path = (home_dir != nullptr) ? std::string(home_dir) + "/tic" : "";  ///< Default file path
   bool verbose = false;
 
   const double final_exploration_percentage = 0.9;  // Change this to the percentage where you want exploration to stop.
@@ -100,14 +100,14 @@ int main(int argc, char* argv[]) {
         break;
       case 'h':
         // Print usage information and exit.
-        printUsage(argv[0]);
+        printUsage(*argv);
         return 0;
       case 'v':
         verbose = true;
         break;
       default:
         // Invalid option or missing argument.
-        printUsage(argv[0]);
+        printUsage(*argv);
         return 1;
     }
   }
@@ -139,16 +139,15 @@ int main(int argc, char* argv[]) {
     agent_o.setExplorationRate(exploration_rate);
 
     // Forward pass and backpropagation for each step in the episode.
-    int moves = 0;
     for (int moves = 0; !game.isGameOver(); ++moves) {
       // Determine the current player.
       const char current_player = (moves % 2 == 0) ? 'X' : 'O';
       AgentMl& current_agent = (moves % 2 == 0) ? agent_x : agent_o;
 
       // Get the current state (Tic-Tac-Toe board configuration).
-      std::vector<double> state = game.getFlattenedBoard(current_player);
+      const std::vector<double> state = game.getFlattenedBoard(current_player);
       // Get available actions (valid moves) for the current state
-      std::vector<int> available_actions = game.getAvailableMoves();
+      const std::vector<int> available_actions = game.getAvailableMoves();
 
       // Select action
       const int action = current_agent.selectMove(state);

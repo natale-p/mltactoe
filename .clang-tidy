@@ -1,0 +1,3 @@
+---
+Checks: '-*,cppcoreguidelines-*,google-build-*,google-default-arguments,google-explicit-constructor,google-global-names-in-headers,google-objc-*,google-readability-*,google-runtime-*,performance-*,readability-avoid-const-params-in-decls,readability-const-return-type,readability-else-after-return,readability-implicit-bool-conversion,readability-magic-numbers,readability-simplify-boolean-expr'
+

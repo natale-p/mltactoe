@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   AgentMl agent;
   TicTacToe game;
   AgentHuman human;
-  std::string model_file_path = (home_dir) ? std::string(home_dir) + "tic.bin" : "";
+  std::string model_file_path = (home_dir != nullptr) ? std::string(home_dir) + "tic.bin" : "";
 
   // Parse command-line arguments using getopt.
   int opt = -1;
@@ -68,11 +68,11 @@ int main(int argc, char* argv[]) {
         break;
       case 'h':
         // Print usage information and exit.
-        printUsage(argv[0]);
+        printUsage(*argv);
         return 0;
       default:
         // Invalid option or missing argument.
-        printUsage(argv[0]);
+        printUsage(*argv);
         return 1;
     }
   }
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   // Check if the model file path is provided.
   if (model_file_path.empty()) {
     std::cerr << "Error: Model file path is not provided." << std::endl;
-    printUsage(argv[0]);
+    printUsage(*argv);
     return 1;
   }
 
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
     clearShell();
     game.displayBoard();
     std::cout << "The AI is playing..." << std::endl;
-    std::chrono::milliseconds duration(500);
+    const std::chrono::milliseconds duration(500);
     std::this_thread::sleep_for(duration);
 
     valid_move = false;
@@ -126,7 +126,15 @@ int main(int argc, char* argv[]) {
     };
   }
 
-  std::cout << " Game is Over. Winner is " << game.checkWinner() << std::endl;
+  const char gameWinner = game.checkWinner();
+  clearShell();
+  game.displayBoard();
+
+  if (gameWinner == '\0') {
+    std::cout << "The game ends in a draw" << std::endl;
+  } else {
+    std::cout << " Game is Over. Winner is " << game.checkWinner() << std::endl;
+  }
 
   return 0;
 }

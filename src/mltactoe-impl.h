@@ -17,13 +17,14 @@
  */
 #pragma once
 #include <mltactoe/mltactoe.h>
+#include <array>
 
 class TicTacToe::Impl {
  public:
   Impl();
 
   void reset();                                  // Reset the game
-  void displayBoard();                           // Display the game board
+  void displayBoard() const;                     // Display the game board
   bool makeMove(int row, int col, char player);  // Make a move
   char checkWinner() const;                      // Check for a winner
   bool isBoardFull() const;                      // Check if the board is full
@@ -35,5 +36,10 @@ class TicTacToe::Impl {
   static std::vector<int> getAvailableMoves(const State& currentState);
 
  private:
-  char board[3][3] {};  // Game board
+  static constexpr int kSize = 9;
+
+  char& accessBoardAt(int row, int col) { return board_.at(row * 3 + col); }
+  const char& accessBoardAt(int row, int col) const { return board_.at(row * 3 + col); }
+
+  std::array<char, kSize> board_ {};  // Game board
 };
