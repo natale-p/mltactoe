@@ -17,6 +17,7 @@
  */
 
 #include "mltactoe-impl.h"
+#include <cassert>
 #include <iostream>
 
 TicTacToe::Impl::Impl() {
@@ -123,20 +124,35 @@ char TicTacToe::Impl::checkSymbol(int row, int col) const {
   return accessBoardAt(row, col);
 }
 
-std::vector<double> TicTacToe::Impl::getFlattenedBoard(char currentPlayer) const {
-  std::vector<double> flattenedBoard;
+TicTacToe::State TicTacToe::Impl::getState() const {
+  constexpr int kStateSize = 27;  // 9 'X', 9 'O', 9 empty
+  TicTacToe::State flattenedBoard = {-1};
+  flattenedBoard.resize(kStateSize, -1);
+
   for (int row = 0; row < 3; ++row) {
     for (int col = 0; col < 3; ++col) {
       const char cell = accessBoardAt(row, col);
       if (cell == ' ') {
-        flattenedBoard.push_back(0.0);
-      } else if (cell == currentPlayer) {
-        flattenedBoard.push_back(1.0);
+        flattenedBoard[18 + (row * 3 + col)] = 1;
+        flattenedBoard[9 + (row * 3 + col)] = 0;
+        flattenedBoard[0 + (row * 3 + col)] = 0;
+      } else if (cell == 'O') {
+        flattenedBoard[18 + (row * 3 + col)] = 0;
+        flattenedBoard[9 + (row * 3 + col)] = 1;
+        flattenedBoard[0 + (row * 3 + col)] = 0;
       } else {
-        flattenedBoard.push_back(-1.0);
+        flattenedBoard[18 + (row * 3 + col)] = 0;
+        flattenedBoard[9 + (row * 3 + col)] = 0;
+        flattenedBoard[0 + (row * 3 + col)] = 1;
       }
     }
   }
+
+  for (const auto& v : flattenedBoard) {
+    assert(v >= 0);
+  }
+
+  assert(flattenedBoard.size() == 27);
   return flattenedBoard;
 }
 
@@ -159,16 +175,11 @@ std::vector<int> TicTacToe::Impl::getAvailableMoves() const {
 
 std::vector<int> TicTacToe::Impl::getAvailableMoves(const State& currentState) {
   std::vector<int> availableMoves;
+  assert(currentState.size() == 27);
 
-  // Iterate over each cell in the board
-  for (int row = 0; row < 3; ++row) {
-    for (int col = 0; col < 3; ++col) {
-      // Convert row and column indices to an integer representing the move
-      const int action = row * 3 + col;
-      // If the cell is empty, it's available for a move
-      if (currentState[action] == 0.0) {
-        availableMoves.push_back(action);
-      }
+  for (int i = 18; i < 27; ++i) {
+    if (currentState.at(i) == 1.0) {
+      availableMoves.push_back(i - 18);
     }
   }
 

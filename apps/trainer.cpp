@@ -43,26 +43,6 @@ static void printUsage(const char* program_name) {
 }
 
 /**
- * @brief get a reward based on the current state of the game
- * @param game The game being played
- * @return 1.0 if the game was won, 0.5 if the game was a draw, and 0.0 in other cases.
- */
-static double getReward(const TicTacToe& game) {
-  constexpr double kWinningReward = 1.0;
-  constexpr double kDrawingReward = 0.5;
-  double reward = 0.0;
-  if (game.isGameOver()) {
-    // Game is over, compute the reward based on the game outcome.
-    if (game.checkWinner() == '\0') {
-      reward = kDrawingReward;  // it's a draw
-    } else {
-      reward = kWinningReward;  // it's a win
-    }
-  }
-  return reward;
-}
-
-/**
  * @brief Main function.
  * @details The main function creates an instance of the AgentMl class, trains it for a
  * specified number of episodes, and saves the trained model to a file.
@@ -77,10 +57,9 @@ int main(int argc, char* argv[]) {
   std::string file_path = (home_dir != nullptr) ? std::string(home_dir) + "/tic" : "";  ///< Default file path
   bool verbose = false;
 
-  const double final_exploration_percentage = 0.9;  // Change this to the percentage where you want exploration to stop.
+  const double final_exploration_percentage = 0.4;  // Change this to the percentage where you want exploration to stop.
   const double initial_exploration_rate = 1.0;
   const double final_exploration_rate = 0.1;
-  const int final_exploration_episode = static_cast<int>(num_episodes * final_exploration_percentage);
 
   // Parse command-line arguments using getopt.
   int opt = -1;
@@ -112,9 +91,14 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  const int final_exploration_episode = static_cast<int>(num_episodes * final_exploration_percentage);
+
   // Create two instances
   AgentMl agent_x;
   AgentMl agent_o;
+
+  int games_won_by_x = 0;
+  int games_won_by_o = 0;
 
   // Training loop.
   for (int episode = 0; episode < num_episodes; ++episode) {
@@ -129,8 +113,8 @@ int main(int argc, char* argv[]) {
     if (episode < final_exploration_episode) {
       // Linear decay: exploration_rate = initial_exploration_rate - (episode / final_exploration_episode) *
       // (initial_exploration_rate - final_exploration_rate)
-      exploration_rate = initial_exploration_rate - (episode / static_cast<double>(final_exploration_episode)) *
-                                                        (initial_exploration_rate - final_exploration_rate);
+      exploration_rate = initial_exploration_rate - ((episode / static_cast<double>(final_exploration_episode)) *
+                                                     (initial_exploration_rate - final_exploration_rate));
     }
     if (verbose) {
       std::cout << "Setting exploration rate to " << exploration_rate << std::endl;
@@ -138,19 +122,29 @@ int main(int argc, char* argv[]) {
     agent_x.setExplorationRate(exploration_rate);
     agent_o.setExplorationRate(exploration_rate);
 
+    std::vector<double> previous_state;
+    std::vector<double> starting_state;
+    std::vector<double> current_state;
+    AgentMl* current_agent = &agent_x;
+    AgentMl* previous_agent = &agent_o;
+    char current_player = 'X';
+    int action = 0;
+    int previous_action = 0;
+
     // Forward pass and backpropagation for each step in the episode.
     for (int moves = 0; !game.isGameOver(); ++moves) {
-      // Determine the current player.
-      const char current_player = (moves % 2 == 0) ? 'X' : 'O';
-      AgentMl& current_agent = (moves % 2 == 0) ? agent_x : agent_o;
+      // Determine the current and previous player.
+      current_player = (moves % 2 == 0) ? 'X' : 'O';
+      current_agent = (moves % 2 == 0) ? &agent_x : &agent_o;
+      previous_agent = (moves % 2 == 0) ? &agent_o : &agent_x;
 
-      // Get the current state (Tic-Tac-Toe board configuration).
-      const std::vector<double> state = game.getFlattenedBoard(current_player);
-      // Get available actions (valid moves) for the current state
-      const std::vector<int> available_actions = game.getAvailableMoves();
+      // Get the Tic-Tac-Toe board configuration before the move.
+      starting_state = previous_state;
+      previous_state = game.getState(current_player);
 
       // Select action
-      const int action = current_agent.selectMove(state);
+      previous_action = action;
+      action = current_agent->selectMove(previous_state);
 
       // Perform the selected action and feed-forward the reward.
       if (!game.makeMove(action, current_player)) {
@@ -158,7 +152,24 @@ int main(int argc, char* argv[]) {
         return 1;
       }
 
-      current_agent.reward(action, getReward(game), state, game.getFlattenedBoard(current_player));
+      // Get the Tic-Tac-Toe board configuration after the move.
+      current_state = game.getState(current_player);
+    }
+
+    if (game.checkWinner() != '\0') {
+      constexpr double kWinningReward = 1.0;
+      current_agent->reward(action, kWinningReward, previous_state, current_state);
+      previous_agent->reward(previous_action, -kWinningReward, starting_state, previous_state);
+    } else {
+      constexpr double kDrawingReward = 0.5;
+      current_agent->reward(action, kDrawingReward, previous_state, current_state);
+      previous_agent->reward(previous_action, kDrawingReward, starting_state, previous_state);
+    }
+
+    if (game.checkWinner() == 'X') {
+      ++games_won_by_x;
+    } else if (game.checkWinner() == 'O') {
+      ++games_won_by_o;
     }
 
     if (verbose) {
@@ -168,6 +179,10 @@ int main(int argc, char* argv[]) {
                 << std::endl
                 << std::endl;
     }
+  }
+
+  if (verbose) {
+    std::cout << "X won " << games_won_by_x << " times. O won " << games_won_by_o << " times." << std::endl;
   }
 
   // Save the trained model to the specified file path.

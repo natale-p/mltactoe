@@ -68,6 +68,7 @@ class AgentMl : public Agent {
   /**
    * @brief Selects a move based on the current state of the game.
    * @param state The current state of the Tic Tac Toe game.
+   * @param player The player for selecting the move for.
    * @return The index of the selected move.
    * @note This method is overridden from the base class Agent and implements
    * the selection of moves using the machine learning model.

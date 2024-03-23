@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
       AgentMl& current_agent = (moves % 2 == 0) ? agent_x : agent_o;
 
       // Get the current state (Tic-Tac-Toe board configuration).
-      const std::vector<double> state = game.getFlattenedBoard(current_player);
+      const std::vector<double> state = game.getState(current_player);
 
       // Select action
       const int action = current_agent.selectMove(state);

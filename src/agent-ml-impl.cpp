@@ -19,22 +19,24 @@
 
 AgentMl::Impl::Impl() : q_network_(mlpack::MeanSquaredError(), mlpack::RandomInitialization()) {
   // Define the architecture of the Q-network.
-  constexpr int kInputLayers = 9;
-  constexpr int kHiddenLayers = 128;
+  constexpr int kInputLayers = 27;
+  constexpr int kHiddenLayers = 256;
   constexpr int kOutputLayers = 9;
-  q_network_.Add<mlpack::Linear>(kInputLayers);  // Input layer (9 cells) -> Hidden layer with 128 units.
+  q_network_.Add<mlpack::Linear>(kInputLayers);  // Input layer (27 cells) -> Hidden layer with 256 units.
   q_network_.Add<mlpack::ReLU>();       // ReLU activation function for the hidden layer.
-  q_network_.Add<mlpack::Linear>(kHiddenLayers);  // Hidden layer with 128 units.
+  q_network_.Add<mlpack::Linear>(kHiddenLayers);  // Hidden layer with 256 units.
   q_network_.Add<mlpack::ReLU>();       // ReLU activation function for the hidden layer.
   q_network_.Add<mlpack::Linear>(kOutputLayers);  // Output layer (Q-values for 9 possible actions).
 }
 
 int AgentMl::Impl::selectMove(const TicTacToe::State& state) {
   std::vector<int> avail_actions = TicTacToe::getAvailableMoves(state);
+  assert(avail_actions.size() > 0);
 
   if (mlpack::Random() < exploration_rate_) {
     // Explore the possible move randomly
-    return avail_actions[mlpack::RandInt(static_cast<int>(avail_actions.size()))];
+    const int idx = mlpack::RandInt(static_cast<int>(avail_actions.size()));
+    return avail_actions.at(idx);
   }
 
   // Select action based on epsilon-greedy policy.

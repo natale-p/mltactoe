@@ -66,8 +66,8 @@ std::vector<int> TicTacToe::getAvailableMoves() const noexcept {
   return impl->getAvailableMoves();
 }
 
-TicTacToe::State TicTacToe::getFlattenedBoard(char currentPlayer) const noexcept {
-  return impl->getFlattenedBoard(currentPlayer);
+TicTacToe::State TicTacToe::getState(char currentPlayer) const noexcept {
+  return impl->getState();
 }
 
 std::vector<int> TicTacToe::getAvailableMoves(const State& currentState) noexcept {

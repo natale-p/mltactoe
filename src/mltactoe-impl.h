@@ -30,7 +30,7 @@ class TicTacToe::Impl {
   bool isBoardFull() const;                      // Check if the board is full
   bool isValidMove(int row, int col);            // Check if a move is valid
   char checkSymbol(int row, int col) const;
-  State getFlattenedBoard(char currentPlayer) const;
+  State getState() const;
   std::vector<int> getAvailableMoves() const;
 
   static std::vector<int> getAvailableMoves(const State& currentState);

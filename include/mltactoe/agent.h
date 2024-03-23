@@ -68,6 +68,7 @@ class Agent {
   /**
    * @brief Selects a move based on the current state of the game.
    * @param state The current state of the Tic Tac Toe game.
+   * @param player The player to select the move for
    * @return The index of the selected move.
    * @note This method must be implemented by derived classes.
    */

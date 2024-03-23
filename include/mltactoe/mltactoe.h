@@ -124,13 +124,14 @@ class TicTacToe final {
   std::vector<int> getAvailableMoves() const noexcept;
 
   /**
-   * @brief Gets the flattened representation of the game board.
-   * @details This function returns the flattened representation of the game board given the current player.
+   * @brief Gets the game board state
+   * @details This function returns the state of the board. The first 9 places are for 'X', then 'O', then the
+   * empty spaces. A 1 represent an occupied slot (or empty if its in the latest 9 places).
    * @param currentPlayer The symbol representing the current player ('X' or 'O').
    * @return The flattened state of the game board.
    * @note This function does not throw exceptions.
    */
-  State getFlattenedBoard(char currentPlayer) const noexcept;
+  State getState(char currentPlayer) const noexcept;
 
   /**
    * @brief Returns available moves.

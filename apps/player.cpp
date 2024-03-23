@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
     // Human player makes a move as 'X'
     bool valid_move = false;
     while (!valid_move) {
-      const int move = human.selectMove(game.getFlattenedBoard('X'));
+      const int move = human.selectMove(game.getState('X'));
       valid_move = game.makeMove(move, 'X');
       if (!valid_move) {
         std::cout << " Not valid. Try again." << std::endl;
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
     int tries = 0;
     while (!valid_move) {
       // Model selects the next move
-      const int modelAction = agent.selectMove(game.getFlattenedBoard('O'));
+      const int modelAction = agent.selectMove(game.getState('O'));
       valid_move = game.makeMove(modelAction, 'O');
       tries++;
       if (tries > 2) {
